@@ -79,7 +79,7 @@ def main():
         'tester'
     ]
 
-    jobs = find_jobs(searches, location='Tel Aviv', max_results=50, bad_words=bad_words)
+    jobs = find_jobs(searches, location='Tel Aviv', bad_words=bad_words)
     export_to_csv(jobs)
 
 

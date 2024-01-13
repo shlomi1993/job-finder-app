@@ -90,11 +90,9 @@ def find_jobs(searches: List[str], location: str, max_results: int = None, max_d
             for job_html_li in jobs_on_page:
                 process_job(job_html_li, jobs, bad_words, max_days_old)
                 if len(jobs) == max_results:
-                    break
-            if len(jobs) == max_results:
-                break
+                    return jobs
             start += N_JOBS_PER_PAGE
-        LOGGER.info('-------------------- Search End --------------------')
+        LOGGER.info('')
     return jobs
 
 
