@@ -2,26 +2,31 @@ import requests
 import re
 import csv
 
-from bs4 import BeautifulSoup
 from typing import List
+from time import sleep
 from datetime import datetime
+from bs4 import BeautifulSoup
+from urllib.parse import urlencode
 
 from src.utils import get_logger
 
 
 JOB_SEARCH_API_URL = 'https://www.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search'
-JOB_POST_BASE_URL = 'https://www.linkedin.com/jobs-guest/jobs/api/jobPosting/{}'
 JOB_VIEW_BASE_URL = 'https://www.linkedin.com/jobs/view/{}'
 
 N_JOBS_PER_PAGE = 25
+API_MAX_JOB_POSTS = 1000
 
-LOGGER = get_logger('Job-Finder')
+_LOGGER = get_logger('Job-Finder')
 
 
 def get_job_list(keywords: str, location: str, start: int) -> List[BeautifulSoup]:
-    res = requests.get(JOB_SEARCH_API_URL, params={'keywords': keywords, 'location': location, 'start': start})
+    url = JOB_SEARCH_API_URL + '?' + urlencode({'keywords': keywords, 'location': location, 'start': start})
+    _LOGGER.info(' * Fetch: ' + url)
+    sleep(1)
+    res = requests.get(url)
     if not res.ok:
-        LOGGER.warning(f'Could not fetch {res.url} - response status code: {res.status_code}')
+        _LOGGER.warning(f'Could not fetch {res.url} - response status code: {res.status_code}')
         return []
     return BeautifulSoup(res.text, 'html.parser').find_all('li')
 
@@ -30,7 +35,7 @@ def parse_detail(soup: BeautifulSoup, tag: str, class_value: str) -> str:
     attrs = {'class': class_value}
     element = soup.find(tag, attrs)
     if not element:
-        LOGGER.warning(f'The tag "{tag}" with attributes {attrs} was not found')
+        _LOGGER.warning(f'The tag "{tag}" with attributes {attrs} was not found')
         return None
     return element.text.strip()
 
@@ -47,7 +52,7 @@ def process_job(job_li: BeautifulSoup, jobs: dict, bad_words: List[str], max_day
     if match:
         job_id = match.group(1)
     else:
-        LOGGER.warning('Could not find job URN!')
+        _LOGGER.warning('Could not find job URN!')
         return
     if job_id in jobs.keys():
         return
@@ -72,38 +77,43 @@ def process_job(job_li: BeautifulSoup, jobs: dict, bad_words: List[str], max_day
         'title': job_title,
         'company': company_name,
         'location': job_location,
-        'posted': date_posted.strftime('%d.%m.%Y'),
+        'posted': date_posted,
         'link': JOB_VIEW_BASE_URL.format(job_id)
     }
-    LOGGER.info(f' - Found {job_title} at {company_name} in {jobs[job_id]["location"]}')
+    _LOGGER.info(f'   - Found {job_title} at {company_name} in {jobs[job_id]["location"]}')
 
 
-def find_jobs(searches: List[str], location: str, max_results: int = None, max_days_old: int = 7,
+def find_jobs(searches: List[str], location: str, max_results: int = None, max_days_old: int = 30,
               bad_words: List[str] = None) -> dict:
-    LOGGER.info('Job search started...')
+    _LOGGER.info('Job search started...')
     jobs = dict()
+    prev_n_found_jobs = 0
     for keywords in searches:
-        LOGGER.info(f'Searching keywords: "{keywords}"')
+        _LOGGER.info(f'Searching keywords: "{keywords}"')
         start = 0
-        while True:
+        while start <= API_MAX_JOB_POSTS:
             jobs_on_page = get_job_list(keywords, location, start)
+            if len(jobs_on_page) == 0:
+                break
             for job_html_li in jobs_on_page:
                 process_job(job_html_li, jobs, bad_words, max_days_old)
                 if len(jobs) == max_results:
                     return jobs
             start += N_JOBS_PER_PAGE
-        LOGGER.info('')
+        _LOGGER.info(f'*** Found {len(jobs) - prev_n_found_jobs} in the last search, {len(jobs)} in total ***')
+        prev_n_found_jobs = len(jobs)
     return jobs
 
 
 def export_to_csv(job_dict: dict, output_file_path: str = 'relevant_jobs.csv') -> None:
-    LOGGER.info('Writing CSV file...')
+    _LOGGER.info('Writing CSV file...')
+    job_dict = dict(sorted(job_dict.items(), key=lambda item: item[1]['posted'], reverse=True))
     headers = ['URN', 'Title', 'Comapny', 'Location', 'Post date', 'Link']
     with open(output_file_path, 'w', encoding='utf-8-sig', newline='') as f:
         writer = csv.writer(f)
         writer.writerow(headers)
         for job_id, job in job_dict.items():
-            data = [job_id, job['title'], job['company'], job['location'], job['posted'], job['link']]
-            LOGGER.info(f'Writing job ID #{job_id}: {job["title"]} at {job["company"]}, in {job["location"]}')
+            data = [job_id, job['title'], job['company'], job['location'], job['posted'].strftime('%d.%m.%Y'), job['link']]
+            _LOGGER.info(f'Writing job ID {job_id}: {job["title"]} at {job["company"]}, in {job["location"]}')
             writer.writerow(data)
-        LOGGER.info('CSV file created.')
+        _LOGGER.info('CSV file created.')
