@@ -91,7 +91,7 @@ def find_jobs(searches: List[str], location: str, max_results: int = None, max_d
     for keywords in searches:
         _LOGGER.info(f'Searching keywords: "{keywords}"')
         start = 0
-        while start <= API_MAX_JOB_POSTS:
+        while start < API_MAX_JOB_POSTS:
             jobs_on_page = get_job_list(keywords, location, start)
             if len(jobs_on_page) == 0:
                 break
@@ -100,7 +100,7 @@ def find_jobs(searches: List[str], location: str, max_results: int = None, max_d
                 if len(jobs) == max_results:
                     return jobs
             start += N_JOBS_PER_PAGE
-        _LOGGER.info(f'*** Found {len(jobs) - prev_n_found_jobs} in the last search, {len(jobs)} in total ***')
+        _LOGGER.info(f'*** Found {len(jobs) - prev_n_found_jobs} in the last search, {len(jobs)} in total ***\n')
         prev_n_found_jobs = len(jobs)
     return jobs
 
@@ -116,4 +116,4 @@ def export_to_csv(job_dict: dict, output_file_path: str = 'relevant_jobs.csv') -
             data = [job_id, job['title'], job['company'], job['location'], job['posted'].strftime('%d.%m.%Y'), job['link']]
             _LOGGER.info(f'Writing job ID {job_id}: {job["title"]} at {job["company"]}, in {job["location"]}')
             writer.writerow(data)
-        _LOGGER.info('CSV file created.')
+    _LOGGER.info('CSV file created.')
