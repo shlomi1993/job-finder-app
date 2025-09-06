@@ -96,7 +96,7 @@ def find_jobs(searches: list[str], location: str, max_results: int = None, max_d
                 if len(jobs) == max_results:
                     return jobs
             start += N_JOBS_PER_PAGE
-        print(f'\033[93m*** Found {len(jobs) - prev_n_found_jobs} in the last search, {len(jobs)} in total ***\033[0m\n')
+        print(f'\033[93m*** Found {len(jobs) - prev_n_found_jobs} positions in the last search, {len(jobs)} in total ***\033[0m\n')
         prev_n_found_jobs = len(jobs)
     return jobs
 
