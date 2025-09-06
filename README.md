@@ -16,25 +16,65 @@ The goal of this app is to automate the job search process for specific roles (e
 - **`main.py`**  
   The main script to run the job finder with pre-defined search terms and filters.
 
-- **`src/job_finder.py`**  
+- **`src/job_finder.py`**
   Core module that performs scraping, parsing, filtering, and exporting.
 
-- **`src/utils.py`**  
+- **`src/utils.py`**
   Utility functions like custom logging (not shown here).
+
+
+## Installation & Setup
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/shlomi1993/job-finder-app.git
+cd job-finder-app
+```
+
+### 2. Install required dependencies
+
+```bash
+pip install -r requirements.txt
+```
 
 ## Usage
 
-### Install required dependencies:
+Run the main script using command-line arguments:
 
 ```bash
-pip install beautifulsoup4 requests
-````
-
-### Run the main script:
-
-```bash
-python main.py
+python main.py --search "backend engineer, machine learning engineer" --filter "senior, manager"
 ```
+
+Or use YAML files for configuration:
+
+```bash
+python main.py --search-yaml searches.yaml --filter-yaml filters.yaml
+```
+
+You can also specify location and output file:
+
+```bash
+python main.py --location "Tel Aviv" --output results.csv
+```
+
+Additional options:
+
+```bash
+python main.py --search "backend engineer" --max-results 50 --max-days-old 14
+```
+
+All available options:
+- `--search`: Comma-separated job search keywords
+- `--search-yaml`: YAML file with job search keywords
+- `--filter`: Comma-separated exclusion keywords
+- `--filter-yaml`: YAML file with exclusion keywords
+- `--location`: Job location (default: Tel Aviv)
+- `--output`: Output CSV file path (default: relevant_jobs.csv)
+- `--max-results`: Maximum number of jobs to find (no limit by default)
+- `--max-days-old`: Maximum age of job postings in days (default: 30)
+
+If no arguments are provided, the app will require you to specify either `--search` or `--search-yaml`.
 
 ### Results will be saved to:
 
@@ -44,42 +84,39 @@ relevant_jobs.csv
 
 ## Customization
 
-* To change search keywords, edit the `searches` list in `main.py`.
-* To exclude specific job types or roles, modify the `bad_words` list.
-* Change the location by updating the `location` parameter in `find_jobs()`.
+- To change search keywords, edit the `searches.yaml` file.
+- To exclude specific job types or roles, modify the `filters.yaml` file.
+- Change the location by using the `--location` argument.
+- Change the output file name with the `--output` argument.
 
-## Example Search Terms
+## Example YAML Files
 
-```python
-searches = [
-    'machine learning',
-    'junior ml engineer',
-    'computer vision engineer',
-    'deep learning',
-    ...
-]
+**searches.yaml**
+```yaml
+searches:
+  - machine learning
+  - backend engineer
+  - computer vision engineer
 ```
 
-## Example Exclusion Terms
-
-```python
-bad_words = [
-    'senior', 'manager', 'staff', 'qa', 'data analyst',
-    'team lead', 'principal', 'blockchain', ...
-]
+**filters.yaml**
+```yaml
+filters:
+  - senior
+  - manager
+  - staff
 ```
 
 ## Output
 
 The output CSV includes the following columns:
 
-* Job URN
-* Title
-* Company
-* Location
-* Post Date
-* Direct Link to Job
-
+- Job URN
+- Title
+- Company
+- Location
+- Post Date
+- Direct Link to Job
 
 ## Disclaimer ⚠️
 

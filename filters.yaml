@@ -1,0 +1,8 @@
+# List of exclusion keywords (bad words)
+filters:
+  - senior
+  - sr.
+  - experienced
+  - staff
+  - qa engineer
+  - quality assurance
