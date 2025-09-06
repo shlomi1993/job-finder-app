@@ -120,4 +120,5 @@ The output CSV includes the following columns:
 
 ## Disclaimer ⚠️
 
-This script relies on the LinkedIn guest job search API and may break if the site's structure or access policies change. Use responsibly and in compliance with LinkedIn’s terms of service.
+This script relies on the LinkedIn guest job search API and may break if the site's structure or access policies change.
+Use responsibly and in compliance with LinkedIn’s terms of service.
