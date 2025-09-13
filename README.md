@@ -13,7 +13,7 @@ The goal of this app is to automate the job search process for specific roles (e
 
 ## Repository Structure
 
-- **`main.py`**  
+- **`main.py`**
   The main script to run the job finder with pre-defined search terms and filters.
 
 - **`src/job_finder.py`**
@@ -32,15 +32,42 @@ git clone https://github.com/shlomi1993/job-finder-app.git
 cd job-finder-app
 ```
 
-### 2. Install required dependencies
+### 2. Run the installation script
 
 ```bash
+./install.sh
+```
+
+This script will:
+- Create a virtual environment named `job-finder-venv`
+- Install all required dependencies from `requirements.txt`
+- Provide instructions on how to activate the environment
+
+### 3. Activate the virtual environment
+
+```bash
+source job-finder-venv/bin/activate
+```
+
+### Alternative: Manual Installation
+
+If you prefer to install dependencies manually:
+
+```bash
+python3 -m venv job-finder-venv
+source job-finder-venv/bin/activate
 pip install -r requirements.txt
 ```
 
 ## Usage
 
-Run the main script using command-line arguments:
+First, make sure your virtual environment is activated:
+
+```bash
+source job-finder-venv/bin/activate
+```
+
+Then run the main script using command-line arguments:
 
 ```bash
 python main.py --search "backend engineer, machine learning engineer" --filter "senior, manager"
