@@ -84,8 +84,8 @@ def find_jobs(searches: list[str], location: str, max_results: int = None, max_d
     print('Job search started...')
     jobs = dict()
     prev_n_found_jobs = 0
-    for keywords in searches:
-        print(f'\033[94mSearching keywords: "{keywords}"\033[0m')
+    for i, keywords in enumerate(searches, start=1):
+        print(f'\033[94mSearching keywords ({i}/{len(searches)}): "{keywords}"\033[0m')
         start = 0
         while start < API_MAX_JOB_POSTS:
             jobs_on_page = get_job_list(keywords, location, start)

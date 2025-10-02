@@ -158,3 +158,13 @@ cython_debug/
 
 # Gzip compressed files
 *.gz
+
+# Beautiful Soup HTML parser library
+beautifulsoup4-4.10.0
+
+# My searches and filters
+my_*.yml
+my_*.yaml
+
+# Results
+*.csv
