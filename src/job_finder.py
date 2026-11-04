@@ -100,6 +100,13 @@ def process_job(job_li: BeautifulSoup, jobs: dict, bad_words: list[str], max_day
         if not any(normalize_place(c) in city for c in cities):
             return
 
+    # Skip reposts of the same role (same title and company under a new job ID), keeping the newest post
+    for other_id, other in list(jobs.items()):
+        if other['title'].lower() == job_title.lower() and other['company'].lower() == company_name.lower():
+            if other['posted'] >= date_posted:
+                return
+            del jobs[other_id]
+
     # Map job ID to a new job dict
     jobs[job_id] = {
         'title': job_title,
