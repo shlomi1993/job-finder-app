@@ -168,3 +168,5 @@ my_*.yaml
 
 # Results
 *.csv
+# Editor settings
+.vscode/
