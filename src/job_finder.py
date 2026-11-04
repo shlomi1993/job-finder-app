@@ -68,6 +68,9 @@ def process_job(job_li: BeautifulSoup, jobs: dict, bad_words: list[str], max_day
     # Parse company name and job location
     company_name = parse_detail(job_li, tag='h4', class_value='base-search-card__subtitle')
     job_location = parse_detail(job_li, tag='span', class_value='job-search-card__location')
+    city = job_location.split(',')[0].lower()  # e.g. "Or Yehuda" out of "Or Yehuda, Tel Aviv District, Israel"
+    if not any(loc in city for loc in ["tel-aviv", "tel aviv", "ramat-gan", "ramat gan", "givatayim", "giv'atayim", "herzliya"]):
+        return
 
     # Map job ID to a new job dict
     jobs[job_id] = {
