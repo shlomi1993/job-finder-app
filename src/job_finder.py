@@ -18,8 +18,12 @@ REQUEST_TIMEOUT_SEC = 15
 MAX_RETRIES = 4
 
 
-def get_job_list(keywords: str, location: str, start: int) -> list[BeautifulSoup]:
-    url = JOB_SEARCH_API_URL + '?' + urlencode({'keywords': keywords, 'location': location, 'start': start})
+def get_job_list(keywords: str, location: str, start: int, max_days_old: int = None) -> list[BeautifulSoup]:
+    params = {'keywords': keywords, 'location': location, 'start': start}
+    if max_days_old:
+        # Ask LinkedIn for recent posts only, otherwise its limited result set is mostly old posts that get filtered out
+        params['f_TPR'] = f'r{max_days_old * 24 * 60 * 60}'
+    url = JOB_SEARCH_API_URL + '?' + urlencode(params)
     # print(' * Fetch: ' + url)
     for attempt in range(1, MAX_RETRIES + 1):
         sleep(1)  # To avoid hitting the API too fast
@@ -109,7 +113,7 @@ def find_jobs(searches: list[str], location: str, max_results: int = None, max_d
         print(f'\033[94mSearching keywords ({i}/{len(searches)}): "{keywords}"\033[0m')
         start = 0
         while start < API_MAX_JOB_POSTS:
-            jobs_on_page = get_job_list(keywords, location, start)
+            jobs_on_page = get_job_list(keywords, location, start, max_days_old)
             if len(jobs_on_page) == 0:
                 break
             for job_html_li in jobs_on_page:
