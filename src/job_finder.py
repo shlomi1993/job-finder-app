@@ -13,19 +13,32 @@ from urllib.parse import urlencode
 JOB_SEARCH_API_URL = 'https://www.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search'
 JOB_VIEW_BASE_URL = 'https://www.linkedin.com/jobs/view/{}'
 
-N_JOBS_PER_PAGE = 25
 API_MAX_JOB_POSTS = 1000
+REQUEST_TIMEOUT_SEC = 15
+MAX_RETRIES = 4
 
 
 def get_job_list(keywords: str, location: str, start: int) -> list[BeautifulSoup]:
     url = JOB_SEARCH_API_URL + '?' + urlencode({'keywords': keywords, 'location': location, 'start': start})
     # print(' * Fetch: ' + url)
-    sleep(1)  # To avoid hitting the API too fast
-    res = requests.get(url)
-    if not res.ok:
-        print(f'Could not fetch {res.url} - response status code: {res.status_code}')
-        return []
-    return BeautifulSoup(res.text, 'html.parser').find_all('li')
+    for attempt in range(1, MAX_RETRIES + 1):
+        sleep(1)  # To avoid hitting the API too fast
+        try:
+            res = requests.get(url, timeout=REQUEST_TIMEOUT_SEC)
+        except requests.RequestException as e:
+            reason = type(e).__name__
+        else:
+            if res.ok:
+                return BeautifulSoup(res.text, 'html.parser').find_all('li')
+            if res.status_code not in (429, 500, 502, 503, 504):
+                print(f'Could not fetch {res.url} - response status code: {res.status_code}')
+                return []
+            reason = f'status code {res.status_code}'
+        backoff = 5 * attempt
+        print(f'Request failed ({reason}), retry {attempt}/{MAX_RETRIES} in {backoff}s...')
+        sleep(backoff)
+    print(f'Giving up on {url}')
+    return []
 
 
 def parse_detail(soup: BeautifulSoup, tag: str, class_value: str) -> str:
@@ -56,18 +69,23 @@ def process_job(job_li: BeautifulSoup, jobs: dict, bad_words: list[str], max_day
 
     # Parse title and filter titles with bad words
     job_title = parse_detail(job_li, tag='h3', class_value='base-search-card__title')
+    if not job_title:
+        return
     if bad_words and contains_bad_word(job_title, bad_words):
         return
 
     # Parse date and filter old job posts
-    date_posted = datetime.strptime(job_li.find('time').attrs['datetime'], '%Y-%m-%d')
+    time_tag = job_li.find('time')
+    if not time_tag or 'datetime' not in time_tag.attrs:
+        return
+    date_posted = datetime.strptime(time_tag.attrs['datetime'], '%Y-%m-%d')
     date_delta = datetime.now() - date_posted
     if date_delta.days > max_days_old:
         return
 
     # Parse company name and job location
-    company_name = parse_detail(job_li, tag='h4', class_value='base-search-card__subtitle')
-    job_location = parse_detail(job_li, tag='span', class_value='job-search-card__location')
+    company_name = parse_detail(job_li, tag='h4', class_value='base-search-card__subtitle') or ''
+    job_location = parse_detail(job_li, tag='span', class_value='job-search-card__location') or ''
     city = job_location.split(',')[0].lower()  # e.g. "Or Yehuda" out of "Or Yehuda, Tel Aviv District, Israel"
     if not any(loc in city for loc in ["tel-aviv", "tel aviv", "ramat-gan", "ramat gan", "givatayim", "giv'atayim", "herzliya"]):
         return
@@ -98,7 +116,7 @@ def find_jobs(searches: list[str], location: str, max_results: int = None, max_d
                 process_job(job_html_li, jobs, bad_words, max_days_old)
                 if len(jobs) == max_results:
                     return jobs
-            start += N_JOBS_PER_PAGE
+            start += len(jobs_on_page)  # The API page size varies (currently 10), so advance by what was returned
         print(f'\033[93m*** Found {len(jobs) - prev_n_found_jobs} new positions in the last search, {len(jobs)} in total ***\033[0m\n')
         prev_n_found_jobs = len(jobs)
     return jobs
