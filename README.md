@@ -1,151 +1,77 @@
 # Job Finder App
 
-This repository contains a script for programmatically searching and filtering relevant job postings from LinkedIn based on custom search terms and exclusion keywords.
+[![Python](https://img.shields.io/badge/python-3.9%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+[![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Linux-lightgrey)](#)
+[![Last commit](https://img.shields.io/github/last-commit/shlomi1993/job-finder-app)](https://github.com/shlomi1993/job-finder-app/commits)
+[![Repo size](https://img.shields.io/github/repo-size/shlomi1993/job-finder-app)](https://github.com/shlomi1993/job-finder-app)
 
-The goal of this app is to automate the job search process for specific roles (e.g., "junior machine learning engineer") in a given location (e.g., "Tel Aviv"), while filtering out irrelevant or undesirable results (e.g., senior positions, team leads, etc.).
+A command-line tool that automates the repetitive part of a job search. Give it the job titles you are looking for and the words you want to avoid (such as `senior` or `intern`), and it runs every search on LinkedIn's public job listings, removes duplicates and irrelevant roles, and skips stale postings.
+
+The results are saved to a single CSV file, newest first, with a direct link to each posting, ready to open in Excel, Numbers or Google Sheets.
 
 ## Features
 
-- Automatically search LinkedIn job postings using multiple keyword combinations.
-- Filter out jobs by undesirable terms (e.g., "senior", "manager", "analyst", etc.).
-- Collect job metadata (title, company, location, post date, link).
-- Export results to a CSV file sorted by post date.
+1. Search many keyword combinations in one run
+2. Exclude jobs whose titles contain unwanted words (e.g. `senior`, `intern`)
+3. Skip postings older than a given number of days
+4. Automatic retries on timeouts and rate limiting
+5. CSV output: title, company, location, post date and link
 
-## Repository Structure
-
-- **`main.py`**
-  The main script to run the job finder with pre-defined search terms and filters.
-
-- **`src/job_finder.py`**
-  Core module that performs scraping, parsing, filtering, and exporting.
-
-- **`src/utils.py`**
-  Utility functions like custom logging (not shown here).
-
-
-## Installation & Setup
-
-### 1. Clone the repository
+## Quick Start
 
 ```bash
 git clone https://github.com/shlomi1993/job-finder-app.git
 cd job-finder-app
-```
-
-### 2. Run the installation script
-
-```bash
 ./install.sh
-```
-
-This script will:
-- Create a virtual environment named `job-finder-venv`
-- Install all required dependencies from `requirements.txt`
-- Provide instructions on how to activate the environment
-
-### 3. Activate the virtual environment
-
-```bash
 source job-finder-venv/bin/activate
 ```
 
-### Alternative: Manual Installation
-
-If you prefer to install dependencies manually:
+Quick test (5 results):
 
 ```bash
-python3 -m venv job-finder-venv
-source job-finder-venv/bin/activate
-pip install -r requirements.txt
+python main.py --search "project manager" --filter "senior, intern" --max-results 5
 ```
 
 ## Usage
 
-First, make sure your virtual environment is activated:
-
 ```bash
-source job-finder-venv/bin/activate
+# Keywords from the command line
+python main.py --search "graphic designer, ux designer" --filter "senior, director"
+
+# Keywords from YAML files
+python main.py --search-yaml searches.yaml --filter-yaml filters.yaml --max-days-old 14 --open
 ```
 
-Then run the main script using command-line arguments:
+| Option | Description | Default |
+|---|---|---|
+| `--search` / `--search-yaml` | Search keywords (comma-separated or YAML) — **required** | — |
+| `--filter` / `--filter-yaml` | Words to exclude from job titles | none |
+| `--location` | Job location | `Tel Aviv` |
+| `--output` | Output CSV path | `relevant_jobs.csv` |
+| `--max-results` | Stop after N jobs | no limit |
+| `--max-days-old` | Max posting age in days | `30` |
+| `--open` | Open the CSV when done (macOS) | off |
 
-```bash
-python main.py --search "backend engineer, machine learning engineer" --filter "senior, manager"
-```
+Keywords and filters are case-insensitive: `Senior`, `senior` and `SENIOR` are treated the same.
 
-Or use YAML files for configuration:
+YAML format:
 
-```bash
-python main.py --search-yaml searches.yaml --filter-yaml filters.yaml
-```
+`searches.yaml`
 
-You can also specify location and output file:
-
-```bash
-python main.py --location "Tel Aviv" --output results.csv
-```
-
-Additional options:
-
-```bash
-python main.py --search "backend engineer" --max-results 50 --max-days-old 14
-```
-
-All available options:
-- `--search`: Comma-separated job search keywords
-- `--search-yaml`: YAML file with job search keywords
-- `--filter`: Comma-separated exclusion keywords
-- `--filter-yaml`: YAML file with exclusion keywords
-- `--location`: Job location (default: Tel Aviv)
-- `--output`: Output CSV file path (default: relevant_jobs.csv)
-- `--max-results`: Maximum number of jobs to find (no limit by default)
-- `--max-days-old`: Maximum age of job postings in days (default: 30)
-
-If no arguments are provided, the app will require you to specify either `--search` or `--search-yaml`.
-
-### Results will be saved to:
-
-```
-relevant_jobs.csv
-```
-
-## Customization
-
-- To change search keywords, edit the `searches.yaml` file.
-- To exclude specific job types or roles, modify the `filters.yaml` file.
-- Change the location by using the `--location` argument.
-- Change the output file name with the `--output` argument.
-
-## Example YAML Files
-
-**searches.yaml**
 ```yaml
 searches:
-  - machine learning
-  - backend engineer
-  - computer vision engineer
+  - accountant
+  - sales representative
 ```
 
-**filters.yaml**
+`filters.yaml`
+
 ```yaml
 filters:
   - senior
-  - manager
-  - staff
+  - intern
 ```
 
-## Output
+## Disclaimer
 
-The output CSV includes the following columns:
-
-- Job URN
-- Title
-- Company
-- Location
-- Post Date
-- Direct Link to Job
-
-## Disclaimer ⚠️
-
-This script relies on the LinkedIn guest job search API and may break if the site's structure or access policies change.
-Use responsibly and in compliance with LinkedIn’s terms of service.
+This tool uses LinkedIn's public guest job search API and may break if LinkedIn changes it. Use responsibly and in line with LinkedIn's terms of service.
