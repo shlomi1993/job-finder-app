@@ -26,6 +26,7 @@ def main():
     parser.add_argument('--output', type=str, default='relevant_jobs.csv', help='Output CSV file path')
     parser.add_argument('--max-results', type=int, help='Maximum number of jobs to find (default: no limit)')
     parser.add_argument('--max-days-old', type=int, default=30, help='Maximum age of job postings in days (default: 30)')
+    parser.add_argument('--open', action='store_true', help='Open the CSV file after creation')
     args = parser.parse_args()
 
     # Load searches
@@ -43,7 +44,7 @@ def main():
         bad_words = []
 
     jobs = find_jobs(searches, location=args.location, max_results=args.max_results,  max_days_old=args.max_days_old, bad_words=bad_words)
-    export_to_csv(jobs, output_file_path=args.output)
+    export_to_csv(jobs, output_file_path=args.output, open_file=args.open)
 
 
 if __name__ == '__main__':

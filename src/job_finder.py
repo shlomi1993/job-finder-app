@@ -1,11 +1,12 @@
+import csv
 import os
 import requests
 import re
-import csv
+import subprocess
 
-from time import sleep
-from datetime import datetime
 from bs4 import BeautifulSoup
+from datetime import datetime
+from time import sleep
 from urllib.parse import urlencode
 
 
@@ -64,7 +65,7 @@ def process_job(job_li: BeautifulSoup, jobs: dict, bad_words: list[str], max_day
     if date_delta.days > max_days_old:
         return
 
-    # Parse comapny name and job location
+    # Parse company name and job location
     company_name = parse_detail(job_li, tag='h4', class_value='base-search-card__subtitle')
     job_location = parse_detail(job_li, tag='span', class_value='job-search-card__location')
 
@@ -79,8 +80,7 @@ def process_job(job_li: BeautifulSoup, jobs: dict, bad_words: list[str], max_day
     print(f' - Found \033[96m{job_title}\033[0m at {company_name} in {jobs[job_id]["location"]}')
 
 
-def find_jobs(searches: list[str], location: str, max_results: int = None, max_days_old: int = 30,
-              bad_words: list[str] = None) -> dict:
+def find_jobs(searches: list[str], location: str, max_results: int = None, max_days_old: int = 30, bad_words: list[str] = None) -> dict:
     print('Job search started...')
     jobs = dict()
     prev_n_found_jobs = 0
@@ -96,12 +96,12 @@ def find_jobs(searches: list[str], location: str, max_results: int = None, max_d
                 if len(jobs) == max_results:
                     return jobs
             start += N_JOBS_PER_PAGE
-        print(f'\033[93m*** Found {len(jobs) - prev_n_found_jobs} positions in the last search, {len(jobs)} in total ***\033[0m\n')
+        print(f'\033[93m*** Found {len(jobs) - prev_n_found_jobs} new positions in the last search, {len(jobs)} in total ***\033[0m\n')
         prev_n_found_jobs = len(jobs)
     return jobs
 
 
-def export_to_csv(job_dict: dict, output_file_path: str = 'relevant_jobs.csv') -> None:
+def export_to_csv(job_dict: dict, output_file_path: str = 'relevant_jobs.csv', open_file: bool = False) -> None:
     print('Writing CSV file...')
     job_dict = dict(sorted(job_dict.items(), key=lambda item: item[1]['posted'], reverse=True))
     headers = ['URN', 'Title', 'Company', 'Location', 'Post date', 'Link']
@@ -113,3 +113,5 @@ def export_to_csv(job_dict: dict, output_file_path: str = 'relevant_jobs.csv') -
             print(f'Writing job ID {job_id}: {job["title"]} at {job["company"]}, in {job["location"]}')
             writer.writerow(data)
     print(f'\n\033[92mCSV file created: {os.path.abspath(output_file_path)}\033[0m')
+    if open_file:
+        subprocess.run(['open', output_file_path], check=True)
