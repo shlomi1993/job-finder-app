@@ -36,10 +36,13 @@ python main.py --search "project manager" --filter "senior, intern" --max-result
 
 ```bash
 # Keywords from the command line
-python main.py --search "graphic designer, ux designer" --filter "senior, director"
+python main.py --search "graphic designer, ux designer" --filter "senior, director" --location "London"
 
 # Keywords from YAML files
 python main.py --search-yaml searches.yaml --filter-yaml filters.yaml --max-days-old 14 --open
+
+# Search the Tel Aviv area but keep only some of its cities
+python main.py --search "accountant" --cities "Tel Aviv, Ramat Gan, Herzliya"
 ```
 
 | Option | Description | Default |
@@ -47,6 +50,7 @@ python main.py --search-yaml searches.yaml --filter-yaml filters.yaml --max-days
 | `--search` / `--search-yaml` | Search keywords (comma-separated or YAML) — **required** | — |
 | `--filter` / `--filter-yaml` | Words to exclude from job titles | none |
 | `--location` | Job location | `Tel Aviv` |
+| `--cities` | Keep only jobs in these cities (comma-separated) | all |
 | `--output` | Output CSV path | `relevant_jobs.csv` |
 | `--max-results` | Stop after N jobs | no limit |
 | `--max-days-old` | Max posting age in days | `30` |

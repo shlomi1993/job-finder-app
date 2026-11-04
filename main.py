@@ -23,6 +23,7 @@ def main():
     filter_group.add_argument('--filter-yaml', type=str, help='YAML file with exclusion keywords')
 
     parser.add_argument('--location', type=str, default='Tel Aviv', help='Job location (default: Tel Aviv)')
+    parser.add_argument('--cities', type=str, help='Comma-separated cities to keep, e.g. "Tel Aviv, Ramat Gan" (default: all)')
     parser.add_argument('--output', type=str, default='relevant_jobs.csv', help='Output CSV file path')
     parser.add_argument('--max-results', type=int, help='Maximum number of jobs to find (default: no limit)')
     parser.add_argument('--max-days-old', type=int, default=30, help='Maximum age of job postings in days (default: 30)')
@@ -43,7 +44,10 @@ def main():
     else:  # Assume no filters
         bad_words = []
 
-    jobs = find_jobs(searches, location=args.location, max_results=args.max_results,  max_days_old=args.max_days_old, bad_words=bad_words)
+    cities = [c.strip() for c in args.cities.split(',') if c.strip()] if args.cities else None
+
+    jobs = find_jobs(searches, location=args.location, max_results=args.max_results, max_days_old=args.max_days_old,
+                     bad_words=bad_words, cities=cities)
     export_to_csv(jobs, output_file_path=args.output, open_file=args.open)
 
 

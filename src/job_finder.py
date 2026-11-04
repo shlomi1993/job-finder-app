@@ -54,12 +54,17 @@ def parse_detail(soup: BeautifulSoup, tag: str, class_value: str) -> str:
     return element.text.strip()
 
 
+def normalize_place(name: str) -> str:
+    # "Tel Aviv-Yafo" -> "tel aviv yafo", "Giv'atayim" -> "givatayim"
+    return name.lower().replace('-', ' ').replace("'", '').strip()
+
+
 def contains_bad_word(title: str, bad_words: list[str]) -> bool:
     # Match whole words only, so "intern" excludes "Intern" but not "Internal" or "International"
     return any(re.search(rf'(?<!\w){re.escape(bw)}(?!\w)', title, re.IGNORECASE) for bw in bad_words)
 
 
-def process_job(job_li: BeautifulSoup, jobs: dict, bad_words: list[str], max_days_old: int) -> None:
+def process_job(job_li: BeautifulSoup, jobs: dict, bad_words: list[str], max_days_old: int, cities: list[str] = None) -> None:
 
     # Get unique job ID
     match = re.search(r'jobPosting:(\d+)', str(job_li))
@@ -90,9 +95,10 @@ def process_job(job_li: BeautifulSoup, jobs: dict, bad_words: list[str], max_day
     # Parse company name and job location
     company_name = parse_detail(job_li, tag='h4', class_value='base-search-card__subtitle') or ''
     job_location = parse_detail(job_li, tag='span', class_value='job-search-card__location') or ''
-    city = job_location.split(',')[0].lower()  # e.g. "Or Yehuda" out of "Or Yehuda, Tel Aviv District, Israel"
-    if not any(loc in city for loc in ["tel-aviv", "tel aviv", "ramat-gan", "ramat gan", "givatayim", "giv'atayim", "herzliya"]):
-        return
+    if cities:
+        city = normalize_place(job_location.split(',')[0])  # e.g. "Or Yehuda" out of "Or Yehuda, Tel Aviv District, Israel"
+        if not any(normalize_place(c) in city for c in cities):
+            return
 
     # Map job ID to a new job dict
     jobs[job_id] = {
@@ -105,7 +111,8 @@ def process_job(job_li: BeautifulSoup, jobs: dict, bad_words: list[str], max_day
     print(f' - Found \033[96m{job_title}\033[0m at {company_name} in {jobs[job_id]["location"]}')
 
 
-def find_jobs(searches: list[str], location: str, max_results: int = None, max_days_old: int = 30, bad_words: list[str] = None) -> dict:
+def find_jobs(searches: list[str], location: str, max_results: int = None, max_days_old: int = 30, bad_words: list[str] = None,
+              cities: list[str] = None) -> dict:
     print('Job search started...')
     jobs = dict()
     prev_n_found_jobs = 0
@@ -117,7 +124,7 @@ def find_jobs(searches: list[str], location: str, max_results: int = None, max_d
             if len(jobs_on_page) == 0:
                 break
             for job_html_li in jobs_on_page:
-                process_job(job_html_li, jobs, bad_words, max_days_old)
+                process_job(job_html_li, jobs, bad_words, max_days_old, cities)
                 if len(jobs) == max_results:
                     return jobs
             start += len(jobs_on_page)  # The API page size varies (currently 10), so advance by what was returned
