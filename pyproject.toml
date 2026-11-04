@@ -14,6 +14,9 @@ dependencies = [
     "pyyaml",
 ]
 
+[project.scripts]
+job-finder = "main:main"
+
 [project.urls]
 Repository = "https://github.com/shlomi1993/job-finder-app"
 

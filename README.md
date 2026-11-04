@@ -29,20 +29,20 @@ source job-finder-venv/bin/activate
 Quick test (5 results):
 
 ```bash
-python main.py --search "project manager" --filter "senior, intern" --max-results 5
+job-finder --search "project manager" --filter "senior, intern" --max-results 5
 ```
 
 ## Usage
 
 ```bash
 # Keywords from the command line
-python main.py --search "graphic designer, ux designer" --filter "senior, director" --location "London"
+job-finder --search "graphic designer, ux designer" --filter "senior, director" --location "London"
 
 # Keywords from YAML files
-python main.py --search-yaml searches.yaml --filter-yaml filters.yaml --max-days-old 14 --open
+job-finder --search-yaml searches.yaml --filter-yaml filters.yaml --max-days-old 14 --open
 
 # Search the Tel Aviv area but keep only some of its cities
-python main.py --search "accountant" --cities "Tel Aviv, Ramat Gan, Herzliya"
+job-finder --search "accountant" --cities "Tel Aviv, Ramat Gan, Herzliya"
 ```
 
 | Option | Description | Default |
