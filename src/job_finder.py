@@ -55,8 +55,8 @@ def parse_detail(soup: BeautifulSoup, tag: str, class_value: str) -> str:
 
 
 def contains_bad_word(title: str, bad_words: list[str]) -> bool:
-    title = title.lower()
-    return any(bw.lower() in title for bw in bad_words)
+    # Match whole words only, so "intern" excludes "Intern" but not "Internal" or "International"
+    return any(re.search(rf'(?<!\w){re.escape(bw)}(?!\w)', title, re.IGNORECASE) for bw in bad_words)
 
 
 def process_job(job_li: BeautifulSoup, jobs: dict, bad_words: list[str], max_days_old: int) -> None:
