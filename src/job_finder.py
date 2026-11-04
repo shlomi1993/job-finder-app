@@ -3,6 +3,7 @@ import os
 import requests
 import re
 import subprocess
+import sys
 
 from bs4 import BeautifulSoup
 from datetime import datetime
@@ -153,4 +154,14 @@ def export_to_csv(job_dict: dict, output_file_path: str = 'relevant_jobs.csv', o
             writer.writerow(data)
     print(f'\n\033[92mCSV file created: {os.path.abspath(output_file_path)}\033[0m')
     if open_file:
-        subprocess.run(['open', output_file_path], check=True)
+        open_with_default_app(output_file_path)
+
+
+def open_with_default_app(file_path: str) -> None:
+    try:
+        if sys.platform == 'win32':
+            os.startfile(file_path)
+        else:
+            subprocess.run(['open' if sys.platform == 'darwin' else 'xdg-open', file_path], check=True)
+    except (OSError, subprocess.CalledProcessError) as e:
+        print(f'Could not open {file_path}: {e}')

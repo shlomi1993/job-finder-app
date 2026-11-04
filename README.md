@@ -54,7 +54,7 @@ python main.py --search "accountant" --cities "Tel Aviv, Ramat Gan, Herzliya"
 | `--output` | Output CSV path | `relevant_jobs.csv` |
 | `--max-results` | Stop after N jobs | no limit |
 | `--max-days-old` | Max posting age in days | `30` |
-| `--open` | Open the CSV when done (macOS) | off |
+| `--open` | Open the CSV when done | off |
 
 Keywords and filters are case-insensitive: `Senior`, `senior` and `SENIOR` are treated the same.
 
