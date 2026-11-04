@@ -1,5 +1,6 @@
 
 import argparse
+import sys
 import yaml
 
 from src.job_finder import find_jobs, export_to_csv
@@ -7,8 +8,10 @@ from src.job_finder import find_jobs, export_to_csv
 
 def load_yaml_list(file_path, key):
     with open(file_path, 'r', encoding='utf-8') as f:
-        data = yaml.safe_load(f)
-        return data.get(key, [])
+        data = yaml.safe_load(f) or {}
+    if not isinstance(data, dict) or key not in data:
+        sys.exit(f'Error: {file_path} must contain a "{key}:" list')
+    return [str(item).strip() for item in data[key] or [] if str(item).strip()]
 
 
 def main():
@@ -35,6 +38,9 @@ def main():
         searches = load_yaml_list(args.search_yaml, 'searches')
     else:  # Assume args.search is provided
         searches = [s.strip() for s in args.search.split(',') if s.strip()]
+
+    if not searches:
+        sys.exit('Error: no search keywords given')
 
     # Load filters
     if args.filter_yaml:
