@@ -33,13 +33,13 @@ source "$VENV_NAME/bin/activate"
 echo "Upgrading pip..."
 pip install --upgrade pip
 
-# Install requirements
-echo "Installing requirements from requirements.txt..."
-if [ -f "requirements.txt" ]; then
-    pip install -r requirements.txt
-    echo "Requirements installed successfully"
+# Install the project and its dependencies
+echo "Installing dependencies from pyproject.toml..."
+if [ -f "pyproject.toml" ]; then
+    pip install -e .
+    echo "Dependencies installed successfully"
 else
-    echo "Error: requirements.txt not found!"
+    echo "Error: pyproject.toml not found!"
     exit 1
 fi
 

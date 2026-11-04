@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "job-finder-app"
+version = "1.0.0"
+description = "Search LinkedIn job postings by keywords, filter out irrelevant roles, and export the results to CSV"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "requests",
+    "beautifulsoup4",
+    "pyyaml",
+]
+
+[project.urls]
+Repository = "https://github.com/shlomi1993/job-finder-app"
+
+[tool.setuptools]
+py-modules = ["main"]
+packages = ["src"]
