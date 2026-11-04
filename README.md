@@ -47,8 +47,10 @@ job-finder --search "accountant" --cities "Tel Aviv, Ramat Gan, Herzliya"
 
 | Option | Description | Default |
 |---|---|---|
-| `--search` / `--search-yaml` | Search keywords (comma-separated or YAML) — **required** | — |
-| `--filter` / `--filter-yaml` | Words to exclude from job titles | none |
+| `--search` | Comma-separated search keywords (this or `--search-yaml` is required) | — |
+| `--search-yaml` | YAML file with search keywords | — |
+| `--filter` | Comma-separated words to exclude from job titles | none |
+| `--filter-yaml` | YAML file with words to exclude from job titles | none |
 | `--location` | Job location | `Tel Aviv` |
 | `--cities` | Keep only jobs in these cities (comma-separated) | all |
 | `--output` | Output CSV path | `relevant_jobs.csv` |
